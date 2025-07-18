@@ -1,0 +1,30 @@
+def calcular_baskhara():
+    print("=======================================\n=======================================\n===== Calcular equação de 2° grau =====")
+    
+    while True:
+        formula = input("\nDigite um número ou letra se deseja calcular uma equação de 2° grau ou 'sair'/'6' para sair: ").lower()
+        
+        if formula == 'sair' or formula == '6':
+            print("\nObrigado por usar a Calculadora! Até mais!")
+            break
+             
+        a = float(input("Insira o valor de a:"))
+        b = float(input("Insira o valor de b:"))
+        c = float(input("Insira o valor de c:"))
+        delta = b**2 - 4*a*c
+        if delta >  0:
+            try:
+                calculo1 = (-b + delta**(0.5)) / (2 * a)
+                calculo2 = (-b - delta**(0.5)) / (2 * a)
+                print(f"Delta(∆): {delta:.2f} \nX1: {calculo1:.2f} \nX2: {calculo2:.2f} ")
+            except ValueError:
+                print("Erro: Insira valores númericos válidos!")
+                exit()
+            
+        else:
+            print("A equação não possui raízes reais!")
+        
+        
+# Inicia o programa
+if __name__ == "__main__":
+    calcular_baskhara()        
