@@ -1,0 +1,778 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+from datetime import datetime, timedelta
+
+class SuperCalculadora(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Super Calculadora Científica")
+        self.geometry("700x550")
+        self.resizable(True, True)
+        
+        # Variável para controlar o tema
+        self.tema_escuro = False
+        
+        # Criar notebook (abas) primeiro
+        self.notebook = ttk.Notebook(self)
+        self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Criar as abas
+        self.criar_aba_idade()
+        self.criar_aba_imc()
+        self.criar_aba_bhaskara()
+        self.criar_aba_energia()
+        
+        # Barra de status
+        self.status_bar = ttk.Frame(self)
+        self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+        
+        # Label de status
+        self.status_label = ttk.Label(
+            self.status_bar, 
+            text="Pronto", 
+            relief=tk.SUNKEN, 
+            anchor=tk.W,
+            padding=3
+        )
+        self.status_label.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        
+        # Botão para alternar tema (criado após a barra de status)
+        self.btn_tema = ttk.Button(
+            self.status_bar, 
+            text="🌙 Modo Escuro", 
+            command=self.alternar_tema,
+            width=15
+        )
+        self.btn_tema.pack(side=tk.RIGHT, padx=10, pady=2)
+        
+        # Configurar tema inicial
+        self.configurar_estilo()
+        
+        # Centralizar na tela
+        self.center_window()
+    
+    def configurar_estilo(self):
+        """Configura os estilos com base no tema selecionado"""
+        self.style = ttk.Style()
+        
+        if self.tema_escuro:
+            # Cores do tema escuro
+            bg_color = "#121212"  # Preto profundo
+            fg_color = "#ffffff"   # Branco
+            entry_bg = "#1e1e1e"   # Preto mais claro
+            entry_fg = "#ffffff"
+            button_bg = "#121212"  # Preto profundo
+            header_bg = "#121212"  # Preto profundo
+            result_bg = "#1e1e1e"
+            tree_bg = "#1e1e1e"
+            tree_fg = "#ffffff"
+            tree_selected = "#333333"
+            
+            # Configurar cores
+            self.configure(bg=bg_color)
+            self.style.configure(".", background=bg_color, foreground=fg_color)
+            self.style.configure("TFrame", background=bg_color)
+            self.style.configure("TLabel", background=bg_color, foreground=fg_color)
+            self.style.configure("TButton", background=button_bg, foreground=fg_color, borderwidth=1)
+            self.style.configure("TEntry", fieldbackground=entry_bg, foreground=entry_fg)
+            self.style.configure("TCombobox", fieldbackground=entry_bg, foreground=entry_fg)
+            self.style.map("TCombobox", fieldbackground=[('readonly', entry_bg)])
+            self.style.map("TCombobox", selectbackground=[('readonly', entry_bg)])
+            self.style.map("TCombobox", selectforeground=[('readonly', fg_color)])
+            self.style.configure("Treeview", background=tree_bg, foreground=tree_fg, fieldbackground=tree_bg)
+            self.style.configure("Treeview.Heading", background=header_bg, foreground=fg_color)
+            self.style.map("Treeview", background=[('selected', tree_selected)])
+            self.style.configure("Header.TLabel", background=header_bg, foreground=fg_color)
+            self.style.configure("TNotebook", background=bg_color)
+            self.style.configure("TNotebook.Tab", background=header_bg, foreground=fg_color)
+            self.style.configure("TLabelframe", background=bg_color, foreground=fg_color, bordercolor="#333333")
+            self.style.configure("TLabelframe.Label", background=bg_color, foreground=fg_color)
+            
+            # Atualizar botão de tema
+            self.btn_tema.config(text="☀️ Modo Claro")
+            
+        else:
+            # Cores do tema claro
+            bg_color = "#f0f0f0"
+            fg_color = "#000000"
+            entry_bg = "#ffffff"
+            entry_fg = "#000000"
+            button_bg = "#e0e0e0"
+            header_bg = "#d0d0d0"
+            result_bg = "#ffffff"
+            tree_bg = "#ffffff"
+            tree_fg = "#000000"
+            tree_selected = "#c0c0c0"
+            
+            # Configurar cores
+            self.configure(bg=bg_color)
+            self.style.configure(".", background=bg_color, foreground=fg_color)
+            self.style.configure("TFrame", background=bg_color)
+            self.style.configure("TLabel", background=bg_color, foreground=fg_color)
+            self.style.configure("TButton", background=button_bg, foreground=fg_color)
+            self.style.configure("TEntry", fieldbackground=entry_bg, foreground=entry_fg)
+            self.style.configure("TCombobox", fieldbackground=entry_bg, foreground=entry_fg)
+            self.style.map("TCombobox", fieldbackground=[('readonly', entry_bg)])
+            self.style.map("TCombobox", selectbackground=[('readonly', entry_bg)])
+            self.style.map("TCombobox", selectforeground=[('readonly', fg_color)])
+            self.style.configure("Treeview", background=tree_bg, foreground=tree_fg, fieldbackground=tree_bg)
+            self.style.configure("Treeview.Heading", background=header_bg, foreground=fg_color)
+            self.style.map("Treeview", background=[('selected', tree_selected)])
+            self.style.configure("Header.TLabel", background=header_bg, foreground=fg_color)
+            self.style.configure("TNotebook", background=bg_color)
+            self.style.configure("TNotebook.Tab", background=header_bg, foreground=fg_color)
+            self.style.configure("TLabelframe", background=bg_color, foreground=fg_color)
+            self.style.configure("TLabelframe.Label", background=bg_color, foreground=fg_color)
+            
+            # Atualizar botão de tema
+            self.btn_tema.config(text="🌙 Modo Escuro")
+        
+        # Atualizar cores dos widgets
+        self.atualizar_cores_widgets()
+    
+    def alternar_tema(self):
+        """Alterna entre os temas claro e escuro"""
+        self.tema_escuro = not self.tema_escuro
+        self.configurar_estilo()
+    
+    def atualizar_cores_widgets(self):
+        """Atualiza as cores dos widgets que não são controlados pelo ttk"""
+        if self.tema_escuro:
+            bg_color = "#121212"
+            fg_color = "#ffffff"
+            entry_bg = "#1e1e1e"
+        else:
+            bg_color = "#f0f0f0"
+            fg_color = "#000000"
+            entry_bg = "#ffffff"
+        
+        # Atualizar todos os widgets de entrada
+        for widget in self.winfo_children():
+            if isinstance(widget, tk.Entry):
+                widget.config(
+                    bg=entry_bg, 
+                    fg=fg_color, 
+                    insertbackground=fg_color,
+                    selectbackground="#555555",
+                    selectforeground=fg_color
+                )
+            elif isinstance(widget, tk.Text):
+                widget.config(
+                    bg=entry_bg, 
+                    fg=fg_color, 
+                    insertbackground=fg_color,
+                    selectbackground="#555555",
+                    selectforeground=fg_color
+                )
+            elif isinstance(widget, tk.Listbox):
+                widget.config(
+                    bg=entry_bg, 
+                    fg=fg_color,
+                    selectbackground="#555555",
+                    selectforeground=fg_color
+                )
+    
+    def center_window(self):
+        """Centraliza a janela na tela"""
+        self.update_idletasks()
+        width = self.winfo_width()
+        height = self.winfo_height()
+        x = (self.winfo_screenwidth() // 2) - (width // 2)
+        y = (self.winfo_screenheight() // 2) - (height // 2)
+        self.geometry(f'{width}x{height}+{x}+{y}')
+    
+    def criar_aba_idade(self):
+        """Cria a aba para cálculo de idade"""
+        frame = ttk.Frame(self.notebook, padding=10)
+        self.notebook.add(frame, text="Calculadora de Idade")
+        
+        # Cabeçalho
+        ttk.Label(frame, text="Calculadora de Idade", style="Header.TLabel").pack(fill=tk.X, pady=10)
+        
+        # Entradas
+        input_frame = ttk.Frame(frame)
+        input_frame.pack(pady=10)
+        
+        ttk.Label(input_frame, text="Data de Nascimento", font=("Arial", 10)).grid(row=0, column=0, columnspan=3, pady=5)
+        
+        # Dia
+        ttk.Label(input_frame, text="Dia:").grid(row=1, column=0, padx=5, sticky=tk.E)
+        self.dia_entry = ttk.Entry(input_frame, width=5)
+        self.dia_entry.grid(row=1, column=1, padx=5, pady=5)
+        self.dia_entry.config(validate="key")
+        self.dia_entry.config(validatecommand=(self.register(self.validar_dia), '%P'))
+        
+        # Mês
+        ttk.Label(input_frame, text="Mês:").grid(row=1, column=2, padx=5, sticky=tk.E)
+        self.mes_entry = ttk.Entry(input_frame, width=5)
+        self.mes_entry.grid(row=1, column=3, padx=5, pady=5)
+        self.mes_entry.config(validate="key")
+        self.mes_entry.config(validatecommand=(self.register(self.validar_mes), '%P'))
+        
+        # Ano
+        ttk.Label(input_frame, text="Ano:").grid(row=1, column=4, padx=5, sticky=tk.E)
+        self.ano_entry = ttk.Entry(input_frame, width=8)
+        self.ano_entry.grid(row=1, column=5, padx=5, pady=5)
+        self.ano_entry.config(validate="key")
+        self.ano_entry.config(validatecommand=(self.register(self.validar_ano), '%P'))
+        
+        # Botão calcular
+        ttk.Button(frame, text="Calcular Idade", command=self.calcular_idade).pack(pady=10)
+        
+        # Resultados
+        result_frame = ttk.LabelFrame(frame, text="Resultado", padding=10)
+        result_frame.pack(fill=tk.X, pady=10)
+        
+        self.data_nasc_label = ttk.Label(result_frame, text="Data de nascimento: ")
+        self.data_nasc_label.pack(anchor=tk.W, pady=3)
+        
+        self.idade_label = ttk.Label(result_frame, text="Idade: ", font=("Arial", 10, "bold"))
+        self.idade_label.pack(anchor=tk.W, pady=3)
+        
+        self.status_label = ttk.Label(result_frame, text="Status: Aguardando cálculo...", foreground="blue")
+        self.status_label.pack(anchor=tk.W, pady=3)
+        
+        # Vincular eventos para auto-tab
+        self.dia_entry.bind('<KeyRelease>', lambda e: self.auto_tab(e, self.dia_entry, 2, self.mes_entry))
+        self.mes_entry.bind('<KeyRelease>', lambda e: self.auto_tab(e, self.mes_entry, 2, self.ano_entry))
+        self.ano_entry.bind('<KeyRelease>', lambda e: self.auto_tab(e, self.ano_entry, 4, None))
+    
+    def validar_dia(self, texto):
+        """Valida a entrada do dia (1-31)"""
+        if texto == "":
+            return True
+        if texto.isdigit():
+            num = int(texto)
+            return 1 <= num <= 31
+        return False
+    
+    def validar_mes(self, texto):
+        """Valida a entrada do mês (1-12)"""
+        if texto == "":
+            return True
+        if texto.isdigit():
+            num = int(texto)
+            return 1 <= num <= 12
+        return False
+    
+    def validar_ano(self, texto):
+        """Valida a entrada do ano (0d.c.-ano atual)"""
+        if texto == "":
+            return True
+        if texto.isdigit():
+            ano_atual = datetime.now().year
+            num = int(texto)
+            return 0 <= num <= ano_atual
+        return False
+    
+    def auto_tab(self, event, entry_atual, max_chars, proximo_entry):
+        """Muda automaticamente para o próximo campo quando atinge o máximo de caracteres"""
+        texto = entry_atual.get()
+        
+        # Se atingiu o máximo de caracteres, muda para o próximo campo
+        if len(texto) >= max_chars and proximo_entry:
+            proximo_entry.focus()
+            
+        # Se apagou tudo e está vazio, volta para o campo anterior
+        if len(texto) == 0 and event.keysym == 'BackSpace':
+            if entry_atual == self.mes_entry:
+                self.dia_entry.focus()
+            elif entry_atual == self.ano_entry:
+                self.mes_entry.focus()
+    
+    def calcular_idade(self):
+        try:
+            dia = int(self.dia_entry.get())
+            mes = int(self.mes_entry.get())
+            ano = int(self.ano_entry.get())
+            
+            data_nasc = datetime(ano, mes, dia)
+            hoje = datetime.now()
+            
+            # Verificar se a data é futura
+            if data_nasc > hoje:
+                messagebox.showerror("Erro", "Data de nascimento não pode ser no futuro!")
+                return
+                
+            # Cálculo da idade
+            anos = hoje.year - data_nasc.year
+            meses = hoje.month - data_nasc.month
+            dias = hoje.day - data_nasc.day
+            
+            # Ajustes para dias negativos
+            if dias < 0:
+                meses -= 1
+                # Obter último dia do mês anterior
+                ultimo_dia_mes_anterior = (hoje.replace(day=1) - timedelta(days=1))
+                dias = ultimo_dia_mes_anterior.day - data_nasc.day + hoje.day
+            
+            # Ajustes para meses negativos
+            if meses < 0:
+                anos -= 1
+                meses += 12
+            
+            # Atualizar interface
+            self.data_nasc_label.config(text=f"Data de nascimento: {data_nasc.strftime('%d/%m/%Y')}")
+            self.idade_label.config(text=f"Idade: {anos} anos, {meses} meses e {dias} dias")
+            self.status_label.config(text="Status: Cálculo realizado com sucesso!", foreground="green")
+            
+        except ValueError:
+            messagebox.showerror("Erro", "Por favor, insira valores válidos para dia, mês e ano!")
+            self.status_label.config(text="Status: Erro nos valores inseridos!", foreground="red")
+        except Exception as e:
+            messagebox.showerror("Erro", f"Ocorreu um erro inesperado: {str(e)}")
+            self.status_label.config(text=f"Status: Erro - {str(e)}", foreground="red")
+    
+    def criar_aba_imc(self):
+        """Cria a aba para cálculo de IMC"""
+        frame = ttk.Frame(self.notebook, padding=10)
+        self.notebook.add(frame, text="Calculadora de IMC")
+        
+        # Cabeçalho
+        ttk.Label(frame, text="Calculadora de IMC", style="Header.TLabel").pack(fill=tk.X, pady=10)
+        
+        # Entradas
+        input_frame = ttk.Frame(frame)
+        input_frame.pack(pady=10)
+        
+        ttk.Label(input_frame, text="Peso (kg):").grid(row=0, column=0, padx=5, pady=5, sticky=tk.E)
+        self.peso_entry = ttk.Entry(input_frame, width=10)
+        self.peso_entry.grid(row=0, column=1, padx=5, pady=5)
+        
+        ttk.Label(input_frame, text="Altura (m):").grid(row=1, column=0, padx=5, pady=5, sticky=tk.E)
+        self.altura_entry = ttk.Entry(input_frame, width=10)
+        self.altura_entry.grid(row=1, column=1, padx=5, pady=5)
+        ttk.Label(input_frame, text="Ex: 1.75 para 1 metro e 75 cm", font=("Arial", 8)).grid(row=2, column=1, padx=5, sticky=tk.W)
+        
+        # Botão calcular
+        ttk.Button(frame, text="Calcular IMC", command=self.calcular_imc).pack(pady=10)
+        
+        # Resultados
+        result_frame = ttk.LabelFrame(frame, text="Resultado", padding=10)
+        result_frame.pack(fill=tk.X, pady=10)
+        
+        self.imc_label = ttk.Label(result_frame, text="Seu IMC: ")
+        self.imc_label.pack(anchor=tk.W, pady=3)
+        
+        self.classificacao_label = ttk.Label(result_frame, text="Classificação: ", font=("Arial", 10, "bold"))
+        self.classificacao_label.pack(anchor=tk.W, pady=3)
+        
+        # Tabela de referência
+        ref_frame = ttk.LabelFrame(frame, text="Classificação IMC", padding=10)
+        ref_frame.pack(fill=tk.X, pady=10)
+        
+        # Criar tabela
+        columns = ("imc", "classificacao")
+        self.tree_imc = ttk.Treeview(ref_frame, columns=columns, show="headings", height=6)
+        
+        self.tree_imc.heading("imc", text="IMC")
+        self.tree_imc.heading("classificacao", text="Classificação")
+        
+        self.tree_imc.column("imc", width=80, anchor=tk.CENTER)
+        self.tree_imc.column("classificacao", width=250, anchor=tk.W)
+        
+        # Adicionar dados
+        dados = [
+            ("< 18.5", "Abaixo do peso"),
+            ("18.5 - 24.9", "Peso ideal"),
+            ("25.0 - 29.9", "Levemente acima do peso"),
+            ("30.0 - 34.9", "Obesidade grau I"),
+            ("35.0 - 39.9", "Obesidade grau II (severa)"),
+            ("≥ 40.0", "Obesidade grau III (mórbida)")
+        ]
+        
+        for item in dados:
+            self.tree_imc.insert("", tk.END, values=item)
+        
+        self.tree_imc.pack(fill=tk.X)
+    
+    def calcular_imc(self):
+        try:
+            peso = float(self.peso_entry.get().replace(',', '.'))
+            altura = float(self.altura_entry.get().replace(',', '.'))
+            
+            if peso <= 0 or altura <= 0:
+                messagebox.showerror("Erro", "Peso e altura devem ser valores positivos!")
+                return
+                
+            imc = peso / (altura ** 2)
+            
+            # Classificação
+            if imc < 18.5:
+                classificacao = "Abaixo do peso"
+                cor = "red"
+            elif imc < 25:
+                classificacao = "Peso ideal"
+                cor = "green"
+            elif imc < 30:
+                classificacao = "Levemente acima do peso"
+                cor = "orange"
+            elif imc < 35:
+                classificacao = "Obesidade grau I"
+                cor = "red"
+            elif imc < 40:
+                classificacao = "Obesidade grau II (severa)"
+                cor = "red"
+            else:
+                classificacao = "Obesidade grau III (mórbida)"
+                cor = "darkred"
+            
+            # Atualizar interface
+            self.imc_label.config(text=f"Seu IMC: {imc:.2f}")
+            self.classificacao_label.config(text=f"Classificação: {classificacao}", foreground=cor)
+            
+            # Alertar se IMC muito alto
+            if imc >= 60:
+                messagebox.showwarning("Aviso", "Este valor está muito acima da média. Verifique os dados inseridos.")
+            
+        except ValueError:
+            messagebox.showerror("Erro", "Por favor, insira valores numéricos válidos!")
+        except ZeroDivisionError:
+            messagebox.showerror("Erro", "A altura não pode ser zero!")
+    
+    def criar_aba_bhaskara(self):
+        """Cria a aba para cálculo de Bhaskara"""
+        frame = ttk.Frame(self.notebook, padding=10)
+        self.notebook.add(frame, text="Calculadora de Bhaskara")
+        
+        # Cabeçalho
+        ttk.Label(frame, text="Resolução de Equação do 2º Grau", style="Header.TLabel").pack(fill=tk.X, pady=10)
+        
+        # Entradas
+        input_frame = ttk.Frame(frame)
+        input_frame.pack(pady=10)
+        
+        ttk.Label(input_frame, text="Formato: ax² + bx + c = 0").grid(row=0, column=0, columnspan=3, pady=5)
+        
+        ttk.Label(input_frame, text="Coeficiente a:").grid(row=1, column=0, padx=5, pady=5, sticky=tk.E)
+        self.a_entry = ttk.Entry(input_frame, width=8)
+        self.a_entry.grid(row=1, column=1, padx=5, pady=5)
+        
+        ttk.Label(input_frame, text="Coeficiente b:").grid(row=2, column=0, padx=5, pady=5, sticky=tk.E)
+        self.b_entry = ttk.Entry(input_frame, width=8)
+        self.b_entry.grid(row=2, column=1, padx=5, pady=5)
+        
+        ttk.Label(input_frame, text="Coeficiente c:").grid(row=3, column=0, padx=5, pady=5, sticky=tk.E)
+        self.c_entry = ttk.Entry(input_frame, width=8)
+        self.c_entry.grid(row=3, column=1, padx=5, pady=5)
+        
+        # Botão calcular
+        ttk.Button(frame, text="Calcular Raízes", command=self.calcular_bhaskara).pack(pady=10)
+        
+        # Resultados
+        result_frame = ttk.LabelFrame(frame, text="Resultado", padding=10)
+        result_frame.pack(fill=tk.X, pady=10)
+        
+        self.delta_label = ttk.Label(result_frame, text="Delta (Δ): ")
+        self.delta_label.pack(anchor=tk.W, pady=3)
+        
+        self.raizes_label = ttk.Label(result_frame, text="Raízes: ", font=("Arial", 10))
+        self.raizes_label.pack(anchor=tk.W, pady=3)
+        
+        self.x1_label = ttk.Label(result_frame, text="X1: ")
+        self.x1_label.pack(anchor=tk.W, pady=3)
+        
+        self.x2_label = ttk.Label(result_frame, text="X2: ")
+        self.x2_label.pack(anchor=tk.W, pady=3)
+    
+    def calcular_bhaskara(self):
+        try:
+            a = float(self.a_entry.get())
+            b = float(self.b_entry.get())
+            c = float(self.c_entry.get())
+            
+            if a == 0:
+                messagebox.showerror("Erro", "O coeficiente 'a' não pode ser zero!")
+                return
+                
+            # Calcular delta
+            delta = b**2 - 4*a*c
+            self.delta_label.config(text=f"Delta (Δ): {delta:.4f}")
+            
+            # Calcular raízes
+            if delta < 0:
+                self.raizes_label.config(text="Raízes: A equação não possui raízes reais", foreground="red")
+                self.x1_label.config(text="")
+                self.x2_label.config(text="")
+            elif delta == 0:
+                x = -b / (2*a)
+                self.raizes_label.config(text="Raízes: Raiz única (delta zero)", foreground="blue")
+                self.x1_label.config(text=f"X: {x:.4f}")
+                self.x2_label.config(text="")
+            else:
+                x1 = (-b + delta**0.5) / (2*a)
+                x2 = (-b - delta**0.5) / (2*a)
+                self.raizes_label.config(text="Raízes: Duas raízes reais distintas", foreground="green")
+                self.x1_label.config(text=f"X1: {x1:.4f}")
+                self.x2_label.config(text=f"X2: {x2:.4f}")
+                
+        except ValueError:
+            messagebox.showerror("Erro", "Por favor, insira valores numéricos válidos!")
+    
+    def criar_aba_energia(self):
+        """Cria a aba para cálculo de energias com seleção de variável"""
+        frame = ttk.Frame(self.notebook, padding=10)
+        self.notebook.add(frame, text="Calculadora de Energia")
+        
+        # Cabeçalho
+        ttk.Label(frame, text="Calculadora de Energia", style="Header.TLabel").pack(fill=tk.X, pady=10)
+        
+        # Seleção do tipo de energia
+        type_frame = ttk.Frame(frame)
+        type_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(type_frame, text="Tipo de energia:").pack(side=tk.LEFT, padx=5)
+        
+        self.tipo_energia = tk.StringVar()
+        tipos = [
+            "Energia Cinética (Ec = mv²/2)",
+            "Energia Potencial Gravitacional (Epg = mgh)",
+            "Energia Potencial Elástica (Epe = kx²/2)",
+            "Energia Elétrica (Eel = Pt)"
+        ]
+        
+        self.combo_energia = ttk.Combobox(type_frame, textvariable=self.tipo_energia, values=tipos, state="readonly", width=35)
+        self.combo_energia.pack(side=tk.LEFT, padx=5)
+        self.combo_energia.current(0)
+        self.combo_energia.bind("<<ComboboxSelected>>", self.atualizar_variaveis_energia)
+        
+        # Seleção da variável a calcular
+        var_frame = ttk.Frame(frame)
+        var_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(var_frame, text="Variável a calcular:").pack(side=tk.LEFT, padx=5)
+        
+        self.variavel_calcular = tk.StringVar()
+        self.combo_variavel = ttk.Combobox(var_frame, textvariable=self.variavel_calcular, state="readonly", width=15)
+        self.combo_variavel.pack(side=tk.LEFT, padx=5)
+        self.combo_variavel.bind("<<ComboboxSelected>>", self.atualizar_campos_energia)
+        
+        # Frame para campos dinâmicos
+        self.campos_energia_frame = ttk.Frame(frame)
+        self.campos_energia_frame.pack(fill=tk.X, pady=10)
+        
+        # Botão calcular
+        ttk.Button(frame, text="Calcular", command=self.calcular_energia).pack(pady=10)
+        
+        # Resultado
+        self.resultado_energia = ttk.Label(frame, text="", font=("Arial", 10, "bold"))
+        self.resultado_energia.pack(pady=10)
+        
+        # Inicializar variáveis
+        self.atualizar_variaveis_energia()
+    
+    def atualizar_variaveis_energia(self, event=None):
+        """Atualiza as variáveis disponíveis para cálculo baseado no tipo de energia"""
+        tipo = self.combo_energia.get()
+        variaveis = []
+        
+        if "Cinética" in tipo:
+            variaveis = ["Ec", "m", "v"]
+        elif "Gravitacional" in tipo:
+            variaveis = ["Epg", "m", "g", "h"]
+        elif "Elástica" in tipo:
+            variaveis = ["Epe", "k", "x"]
+        elif "Elétrica" in tipo:
+            variaveis = ["Eel", "P", "t"]
+        
+        self.combo_variavel["values"] = variaveis
+        if variaveis:
+            self.combo_variavel.current(0)
+            self.atualizar_campos_energia()
+    
+    def atualizar_campos_energia(self, event=None):
+        """Atualiza os campos de entrada baseado na variável selecionada"""
+        # Limpar frame existente
+        for widget in self.campos_energia_frame.winfo_children():
+            widget.destroy()
+        
+        tipo = self.combo_energia.get()
+        variavel_calcular = self.combo_variavel.get()
+        campos = []
+        
+        if "Cinética" in tipo:
+            # Campos para energia cinética
+            if variavel_calcular != "Ec":
+                campos.append(("Ec (J)", "ec"))
+            if variavel_calcular != "m":
+                campos.append(("Massa (kg)", "m"))
+            if variavel_calcular != "v":
+                campos.append(("Velocidade (m/s)", "v"))
+                
+        elif "Gravitacional" in tipo:
+            # Campos para energia potencial gravitacional
+            if variavel_calcular != "Epg":
+                campos.append(("Epg (J)", "epg"))
+            if variavel_calcular != "m":
+                campos.append(("Massa (kg)", "m"))
+            if variavel_calcular != "g":
+                campos.append(("Gravidade (m/s²)", "g"))
+            if variavel_calcular != "h":
+                campos.append(("Altura (m)", "h"))
+                
+        elif "Elástica" in tipo:
+            # Campos para energia potencial elástica
+            if variavel_calcular != "Epe":
+                campos.append(("Epe (J)", "epe"))
+            if variavel_calcular != "k":
+                campos.append(("Constante (N/m)", "k"))
+            if variavel_calcular != "x":
+                campos.append(("Deformação (m)", "x"))
+                
+        elif "Elétrica" in tipo:
+            # Campos para energia elétrica
+            if variavel_calcular != "Eel":
+                campos.append(("Eel (J)", "eel"))
+            if variavel_calcular != "P":
+                campos.append(("Potência (W)", "p"))
+            if variavel_calcular != "t":
+                campos.append(("Tempo (s)", "t"))
+        
+        # Criar os campos
+        self.entries_energia = {}
+        for i, (label, name) in enumerate(campos):
+            ttk.Label(self.campos_energia_frame, text=label).grid(row=i, column=0, padx=5, pady=5, sticky=tk.E)
+            entry = ttk.Entry(self.campos_energia_frame, width=15)
+            entry.grid(row=i, column=1, padx=5, pady=5)
+            self.entries_energia[name] = entry
+            
+            # Valor padrão para gravidade
+            if name == "g":
+                entry.insert(0, "9.8")
+    
+    def calcular_energia(self):
+        try:
+            tipo = self.combo_energia.get()
+            variavel_calcular = self.combo_variavel.get()
+            resultado = ""
+            
+            if "Cinética" in tipo:
+                # Obter valores
+                ec = self.entries_energia.get("ec", None)
+                m = self.entries_energia.get("m", None)
+                v = self.entries_energia.get("v", None)
+                
+                # Converter valores
+                if ec: ec = float(ec.get())
+                if m: m = float(m.get())
+                if v: v = float(v.get())
+                
+                # Calcular variável selecionada
+                if variavel_calcular == "Ec":
+                    if m is None or v is None:
+                        raise ValueError("Valores insuficientes para cálculo")
+                    resultado = f"Ec = {0.5 * m * v**2:.4f} J"
+                    
+                elif variavel_calcular == "m":
+                    if ec is None or v is None:
+                        raise ValueError("Valores insuficientes para cálculo")
+                    resultado = f"m = {(2 * ec) / (v**2):.4f} kg"
+                    
+                elif variavel_calcular == "v":
+                    if ec is None or m is None:
+                        raise ValueError("Valores insuficientes para cálculo")
+                    resultado = f"v = {(2 * ec / m)**0.5:.4f} m/s"
+            
+            elif "Gravitacional" in tipo:
+                # Obter valores
+                epg = self.entries_energia.get("epg", None)
+                m = self.entries_energia.get("m", None)
+                g = self.entries_energia.get("g", None)
+                h = self.entries_energia.get("h", None)
+                
+                # Converter valores
+                if epg: epg = float(epg.get())
+                if m: m = float(m.get())
+                if g: g = float(g.get())
+                if h: h = float(h.get())
+                
+                # Calcular variável selecionada
+                if variavel_calcular == "Epg":
+                    if m is None or g is None or h is None:
+                        raise ValueError("Valores insuficientes para cálculo")
+                    resultado = f"Epg = {m * g * h:.4f} J"
+                    
+                elif variavel_calcular == "m":
+                    if epg is None or g is None or h is None:
+                        raise ValueError("Valores insuficientes para cálculo")
+                    resultado = f"m = {epg / (g * h):.4f} kg"
+                    
+                elif variavel_calcular == "g":
+                    if epg is None or m is None or h is None:
+                        raise ValueError("Valores insuficientes para cálculo")
+                    resultado = f"g = {epg / (m * h):.4f} m/s²"
+                    
+                elif variavel_calcular == "h":
+                    if epg is None or m is None or g is None:
+                        raise ValueError("Valores insuficientes para cálculo")
+                    resultado = f"h = {epg / (m * g):.4f} m"
+            
+            elif "Elástica" in tipo:
+                # Obter valores
+                epe = self.entries_energia.get("epe", None)
+                k = self.entries_energia.get("k", None)
+                x = self.entries_energia.get("x", None)
+                
+                # Converter valores
+                if epe: epe = float(epe.get())
+                if k: k = float(k.get())
+                if x: x = float(x.get())
+                
+                # Calcular variável selecionada
+                if variavel_calcular == "Epe":
+                    if k is None or x is None:
+                        raise ValueError("Valores insuficientes para cálculo")
+                    resultado = f"Epe = {0.5 * k * x**2:.4f} J"
+                    
+                elif variavel_calcular == "k":
+                    if epe is None or x is None:
+                        raise ValueError("Valores insuficientes para cálculo")
+                    resultado = f"k = {(2 * epe) / (x**2):.4f} N/m"
+                    
+                elif variavel_calcular == "x":
+                    if epe is None or k is None:
+                        raise ValueError("Valores insuficientes para cálculo")
+                    resultado = f"x = {(2 * epe / k)**0.5:.4f} m"
+            
+            elif "Elétrica" in tipo:
+                # Obter valores
+                eel = self.entries_energia.get("eel", None)
+                p = self.entries_energia.get("p", None)
+                t = self.entries_energia.get("t", None)
+                
+                # Converter valores
+                if eel: eel = float(eel.get())
+                if p: p = float(p.get())
+                if t: t = float(t.get())
+                
+                # Calcular variável selecionada
+                if variavel_calcular == "Eel":
+                    if p is None or t is None:
+                        raise ValueError("Valores insuficientes para cálculo")
+                    resultado = f"Eel = {p * t:.4f} J"
+                    
+                elif variavel_calcular == "P":
+                    if eel is None or t is None:
+                        raise ValueError("Valores insuficientes para cálculo")
+                    resultado = f"P = {eel / t:.4f} W"
+                    
+                elif variavel_calcular == "t":
+                    if eel is None or p is None:
+                        raise ValueError("Valores insuficientes para cálculo")
+                    resultado = f"t = {eel / p:.4f} s"
+            
+            self.resultado_energia.config(text=resultado)
+            
+        except ValueError as ve:
+            messagebox.showerror("Erro", f"Entrada inválida: {str(ve)}")
+        except TypeError:
+            messagebox.showerror("Erro", "Por favor, preencha todos os campos necessários")
+        except ZeroDivisionError:
+            messagebox.showerror("Erro", "Divisão por zero! Verifique os valores inseridos")
+        except Exception as e:
+            messagebox.showerror("Erro", f"Ocorreu um erro: {str(e)}")
+
+
+if __name__ == "__main__":
+    app = SuperCalculadora()
+    app.mainloop()
